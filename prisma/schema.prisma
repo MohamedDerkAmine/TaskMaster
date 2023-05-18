@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
+  provider     = "postgres"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
@@ -22,7 +22,7 @@ model Column {
   id      Int    @id @default(autoincrement())
   title   String
   boardId Int
-  board   Board  @relation(fields: [boardId], references: [id])
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   tasks   Task[]
 
   @@index([boardId])
@@ -32,9 +32,19 @@ model Task {
   id          Int       @id @default(autoincrement())
   title       String
   description String
-  subTasks    Json
+  subTasks    SubTask[]
   columnId    Int
-  column      Column    @relation(fields: [columnId], references: [id])
+  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
 
   @@index([columnId])
+}
+
+model SubTask {
+  id      Int     @id @default(autoincrement())
+  content String
+  status  Boolean @default(false)
+  taskId  Int
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
 }

@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const columnRouter = createTRPCRouter({
   create: publicProcedure
-    .input(z.object({ title: z.string(), boardId: z.number() }))
+    .input(z.object({ title: z.string(), boardId: z.number().optional() }))
     .mutation(async ({ input, ctx }) => {
       return await ctx.prisma.column.create({
         data: {
@@ -16,14 +16,14 @@ export const columnRouter = createTRPCRouter({
   update: publicProcedure
     .input(
       z.object({
-        boardId: z.number(),
+        columnId: z.number(),
         title: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       return await ctx.prisma.column.update({
         where: {
-          id: input.boardId,
+          id: input.columnId,
         },
         data: {
           title: input.title,
@@ -40,14 +40,18 @@ export const columnRouter = createTRPCRouter({
       });
     }),
   getAll: publicProcedure
-    .input(z.object({ boardId: z.number() }))
+    .input(z.object({ boardId: z.number().optional() }))
     .query(({ ctx, input }) => {
       return ctx.prisma.column.findMany({
         where: {
           boardId: input.boardId,
         },
         include: {
-          tasks: true,
+          tasks: {
+            include: {
+              subTasks: true,
+            },
+          },
         },
       });
     }),
