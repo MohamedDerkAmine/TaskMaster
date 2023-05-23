@@ -45,9 +45,9 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
     reset,
     control,
     setValue,
-    formState: { isValid, errors },
+    formState: { isValid },
   } = useForm({
-    // resolver: zodResolver(updateTaskSchema),
+    resolver: zodResolver(updateTaskSchema),
   });
 
   const taskUpdate = (data: z.infer<typeof updateTaskSchema>) => {
@@ -56,11 +56,11 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
         taskId: task?.currentTask?.id,
         title: data.title as string,
         description: data.description as string,
-        columnId: data.columnId ? parseInt(data.columnId as string) : undefined,
+        columnId: data.columnId ? parseInt(data.columnId) : undefined,
         subTasksIds: [...new Set(subTasksIdsToDelete)],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         subTasks:
-          data.subTasks !== undefined && isNaN(data.subTasks)
+          data.subTasks !== undefined && data.subTasks.length > 0
             ? Object.entries(data.subTasks)
                 .filter((subTask) => subTask[1])
                 .map((subTask) => ({ content: subTask[1] }))
@@ -226,7 +226,7 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
 
             <button
               type="submit"
-              // disabled={!isValid}
+              disabled={!isValid}
               className="flex items-center justify-center gap-2 rounded-full bg-secondary py-3 font-medium text-white"
             >
               Update Task
