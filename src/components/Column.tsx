@@ -39,13 +39,18 @@ const Col: FC<ICol> = ({ column, refetchCols }) => {
       }`}
       onDragOver={(e) => {
         e.preventDefault();
+        console.log(column.id);
         setDrag(column.id);
       }}
       onDrop={(e) => {
         updateTaskMutation.mutate(
           {
+            title: undefined,
             taskId: parseInt(e.dataTransfer.getData("taskId")),
             columnId: column.id,
+            description: undefined,
+            subTasks: [],
+            subTasksIds: [],
           },
           { onSuccess: () => refetchCols() }
         );
