@@ -2,7 +2,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Column, SubTask, Task } from "@prisma/client";
 import { atom, useAtom } from "jotai";
-import { type FC, Fragment, useState, useEffect } from "react";
+import { type FC, Fragment, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { HiXMark } from "react-icons/hi2";
 import { z } from "zod";
@@ -26,7 +26,6 @@ const updateTaskSchema = z.object({
   columnId: z.string().optional(),
   description: z.string().optional(),
   subTasks: z.array(z.string().optional()).optional(),
-  newSubTasks: z.array(z.string().optional()).optional(),
 });
 
 const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
@@ -51,61 +50,43 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
     // resolver: zodResolver(updateTaskSchema),
   });
 
-  useEffect(() => console.log(errors), [errors]);
   const taskUpdate = (data: z.infer<typeof updateTaskSchema>) => {
-    let SubTasks;
-
-    if (
-      isNaN(data.subTasks) &&
-      data.subTasks?.filter((subTask) => subTask).length > 0 &&
-      data.newSubTasks?.length > 0
-    ) {
-      SubTasks = [
-        ...data.subTasks?.filter((subTask) => subTask && subTask.length > 0),
-        ...data.newSubTasks?.filter((subTask) => subTask),
-      ];
-    } else if (
-      isNaN(data.subTasks) &&
-      data.subTasks?.filter((subTask) => subTask).length > 0
-    ) {
-      SubTasks = data.subTasks?.filter((subTask) => subTask);
-    } else if (data.newSubTasks && isNaN(data.newSubTasks)) {
-      SubTasks = data.newSubTasks.filter((subTask) => subTask);
-    } else {
-      SubTasks = undefined;
-    }
-
-    console.log(SubTasks);
-
     updateTaskMutation.mutate(
       {
         taskId: task?.currentTask?.id,
         title: data.title as string,
         description: data.description as string,
-        // columnId: data.columnId
-        //   ? parseInt(data.columnId as string)
-        //   : task?.currentTask?.columnId,
-        subTasksIds:
-          [...new Set(subTasksIdsToDelete)].length > 0
-            ? [...new Set(subTasksIdsToDelete)]
-            : undefined,
+        columnId: data.columnId ? parseInt(data.columnId as string) : undefined,
+        subTasksIds: [...new Set(subTasksIdsToDelete)],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        subTasks: SubTasks,
+        subTasks:
+          data.subTasks !== undefined && isNaN(data.subTasks)
+            ? Object.entries(data.subTasks)
+                .filter((subTask) => subTask[1])
+                .map((subTask) => ({ content: subTask[1] }))
+            : undefined,
       },
       {
         onSuccess: () => {
           refetchCols();
-          reset();
+          setIsUpdateTaskModalOpen(false);
+          setSubTasksInputs([]);
+          setSubTasksIdsToDelete([]);
         },
       }
     );
+    reset();
   };
 
   return (
     <>
       <Modal
         show={isUpdateTaskModalOpen}
-        onClose={() => setIsUpdateTaskModalOpen(false)}
+        onClose={() => {
+          setIsUpdateTaskModalOpen(false);
+          setSubTasksInputs([]);
+          reset();
+        }}
         onSubmit={(e) => {
           void handleSubmit(taskUpdate)(e);
         }}
@@ -155,12 +136,15 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                   control={control}
                   type="text"
                   defaultValue={subTask.content}
+                  onChange={() =>
+                    setSubTasksIdsToDelete([...subTasksIdsToDelete, subTask.id])
+                  }
                 />
                 <HiXMark
                   size={30}
                   className="cursor-pointer text-slate-600 transition-all duration-200 ease-in-out hover:text-slate-400"
                   onClick={() => {
-                    setValue(`subTasks.${subTask.id}`, "");
+                    reset({ subTasks: subTask.id });
                     setSubTasksIdsToDelete([
                       ...subTasksIdsToDelete,
                       subTask.id,
@@ -181,10 +165,10 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
             {subTasksInputs.map((subTaskInput) => (
               <div
                 className="flex w-full items-center gap-x-4"
-                key={`${subTaskInput}other`}
+                key={`new_${subTaskInput}`}
               >
                 <Input
-                  name={`newSubTasks.${subTaskInput}`}
+                  name={`subTasks.new_${subTaskInput}`}
                   control={control}
                   label=""
                   placeholder=""
@@ -194,11 +178,7 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                   size={30}
                   className="cursor-pointer text-slate-600 transition-all duration-200 ease-in-out hover:text-slate-400"
                   onClick={() => {
-                    reset({
-                      newSubTasks: {
-                        [subTaskInput]: subTaskInput,
-                      },
-                    });
+                    setValue(`subTasks.new_${subTaskInput}`, "");
                     setSubTasksInputs([
                       ...subTasksInputs.filter((subT) => subT !== subTaskInput),
                     ]);
@@ -324,8 +304,17 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                           id: subTask.id,
                           content: subTask.content,
                           status: !subTask.status,
+                          taskId: subTask.taskId,
                         },
-                        { onSuccess: () => refetchCols() }
+                        {
+                          onSuccess: (data) => {
+                            refetchCols();
+                            setTask({
+                              currentTask: data,
+                              isTaskDetailsModalOpen: true,
+                            });
+                          },
+                        }
                       );
                     }}
                   >
@@ -353,6 +342,8 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                         columnId: cols?.filter(
                           (col) => col.title === e.target.value
                         )[0]?.id,
+                        subTasks: [],
+                        subTasksIds: [],
                       },
                       { onSuccess: () => refetchCols() }
                     );
