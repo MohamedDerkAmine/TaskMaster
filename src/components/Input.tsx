@@ -8,6 +8,7 @@ type InputProps = {
   label?: string;
   placeholder?: string;
   defaultValue?: string;
+  onChange?: () => void;
 };
 
 const Input: FC<InputProps> = ({
@@ -17,6 +18,7 @@ const Input: FC<InputProps> = ({
   label,
   placeholder,
   defaultValue,
+  onChange,
 }) => {
   const { field } = useController({ control, name });
 
@@ -44,6 +46,10 @@ const Input: FC<InputProps> = ({
           placeholder={placeholder}
           defaultValue={defaultValue}
           {...field}
+          onChange={(e) => {
+            if (onChange) onChange();
+            field.onChange(e);
+          }}
         />
       )}
     </div>
