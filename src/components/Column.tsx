@@ -39,7 +39,6 @@ const Col: FC<ICol> = ({ column, refetchCols }) => {
       }`}
       onDragOver={(e) => {
         e.preventDefault();
-        console.log(column.id);
         setDrag(column.id);
       }}
       onDrop={(e) => {
