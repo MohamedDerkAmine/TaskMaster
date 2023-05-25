@@ -7,6 +7,7 @@ import type { Board } from "@prisma/client";
 import { api } from "~/utils/api";
 import { atom, useAtom } from "jotai";
 import CreateBoardModal from "./CreateBoardModal";
+import { SignOutButton } from "@clerk/nextjs";
 
 export const boardAtom = atom<{
   currentBoard?: Board;
@@ -67,6 +68,12 @@ const SideBar: FC = () => {
         </li>
         <CreateBoardModal refetchBoards={() => void refetchBoards()} />
       </ul>
+
+      <div className="flex h-full w-full items-end px-8">
+        <div className="mb-10 rounded-md bg-red-500 px-5 py-3 font-medium text-white">
+          <SignOutButton />
+        </div>
+      </div>
     </div>
   );
 };
