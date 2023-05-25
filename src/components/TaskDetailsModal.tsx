@@ -9,10 +9,13 @@ import { z } from "zod";
 import { api } from "~/utils/api";
 import { Modal, Dropdown, Input } from "./";
 
-export const taskAtom = atom<{
-  currentTask?: Task & { subTasks: SubTask[] };
-  isTaskDetailsModalOpen?: boolean;
-} | null>(null);
+export const taskAtom = atom<
+  | {
+      currentTask?: (Task & { subTasks: SubTask[] | undefined }) | null;
+      isTaskDetailsModalOpen?: boolean;
+    }
+  | undefined
+>(undefined);
 
 const isUpdateTaskModalOpenAtom = atom(false);
 
@@ -126,7 +129,7 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
               defaultValue={task?.currentTask?.description}
             />
 
-            {task?.currentTask?.subTasks.map((subTask) => (
+            {task?.currentTask?.subTasks?.map((subTask) => (
               <div
                 className="flex w-full items-center gap-x-4"
                 key={subTask.id}
@@ -152,7 +155,7 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                     setTask({
                       currentTask: {
                         ...task.currentTask,
-                        subTasks: task.currentTask?.subTasks.filter(
+                        subTasks: task.currentTask?.subTasks?.filter(
                           (subT) => subTask.id !== subT.id
                         ),
                       },
@@ -287,13 +290,13 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                 <p className="text-sm font-medium text-white">
                   Subtasks (
                   {
-                    task.currentTask.subTasks.filter(
+                    task.currentTask.subTasks?.filter(
                       (subTask) => subTask.status
                     ).length
                   }{" "}
-                  of {task.currentTask.subTasks.length})
+                  of {task.currentTask.subTasks?.length})
                 </p>
-                {task.currentTask.subTasks.map((subTask) => (
+                {task.currentTask.subTasks?.map((subTask) => (
                   <label
                     htmlFor={subTask.id.toString()}
                     key={subTask.id}
