@@ -153,6 +153,8 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                       subTask.id,
                     ]);
                     setTask({
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
                       currentTask: {
                         ...task.currentTask,
                         subTasks: task.currentTask?.subTasks?.filter(
@@ -313,6 +315,8 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                           onSuccess: (data) => {
                             refetchCols();
                             setTask({
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              // @ts-ignore
                               currentTask: data,
                               isTaskDetailsModalOpen: true,
                             });
