@@ -10,10 +10,12 @@ import {
   SignedOut,
 } from "@clerk/nextjs";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const publicPages: Array<string> = [
   "/sign-in/[[...index]]",
   "/sign-up/[[...index]]",
+  "/",
 ];
 
 const MyApp: AppType = ({ Component, pageProps }) => {
@@ -21,20 +23,25 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   const isPublicPage = publicPages.includes(pathname);
 
   return (
-    <ClerkProvider {...pageProps}>
-      {isPublicPage ? (
-        <Component {...pageProps} />
-      ) : (
-        <>
-          <SignedIn>
-            <Component {...pageProps} />
-          </SignedIn>
-          <SignedOut>
-            <RedirectToSignIn />
-          </SignedOut>
-        </>
-      )}
-    </ClerkProvider>
+    <>
+      <Head>
+        <title>Task Master</title>
+      </Head>
+      <ClerkProvider {...pageProps}>
+        {isPublicPage ? (
+          <Component {...pageProps} />
+        ) : (
+          <>
+            <SignedIn>
+              <Component {...pageProps} />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        )}
+      </ClerkProvider>
+    </>
   );
 };
 

@@ -8,6 +8,8 @@ import { api } from "~/utils/api";
 import { atom, useAtom } from "jotai";
 import CreateBoardModal from "./CreateBoardModal";
 import { SignOutButton } from "@clerk/nextjs";
+import Link from "next/link";
+import { VscSignOut } from "react-icons/vsc";
 
 export const boardAtom = atom<{
   currentBoard?: Board;
@@ -30,12 +32,12 @@ const SideBar: FC = () => {
 
   return (
     <div className="hidden w-[400px] flex-col gap-y-5 border-r border-r-white/10 bg-primary lg:flex">
-      <div className="flex items-center gap-x-2 p-10">
+      <Link href="/" className="flex items-center gap-x-2 p-10">
         <Image src="/assets/kraken.png" alt="logo" width={60} height={60} />
         <p className={`text-2xl font-bold text-white ${concertOne.className}`}>
           TaskMaster
         </p>
-      </div>
+      </Link>
 
       <p className="pl-10 text-white/50">All Boards ({boards?.length})</p>
 
@@ -70,7 +72,8 @@ const SideBar: FC = () => {
       </ul>
 
       <div className="flex h-full w-full items-end px-8">
-        <div className="mb-10 rounded-md bg-red-500 px-5 py-3 font-medium text-white">
+        <div className="mb-10 flex items-center gap-2 rounded-md bg-red-500 p-3 font-medium text-white">
+          <VscSignOut size={20} />
           <SignOutButton />
         </div>
       </div>

@@ -11,7 +11,7 @@ import { Modal, Dropdown, Input } from "./";
 
 export const taskAtom = atom<
   | {
-      currentTask?: (Task & { subTasks: SubTask[] | undefined }) | null;
+      currentTask?: Task & { subTasks: SubTask[] | undefined };
       isTaskDetailsModalOpen?: boolean;
     }
   | undefined
@@ -153,8 +153,6 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                       subTask.id,
                     ]);
                     setTask({
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
                       currentTask: {
                         ...task.currentTask,
                         subTasks: task.currentTask?.subTasks?.filter(
@@ -312,14 +310,9 @@ const TaskDetailsModal: FC<ITaskDetailModal> = ({ cols, refetchCols }) => {
                           taskId: subTask.taskId,
                         },
                         {
-                          onSuccess: (data) => {
+                          onSuccess: () => {
                             refetchCols();
-                            setTask({
-                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                              // @ts-ignore
-                              currentTask: data,
-                              isTaskDetailsModalOpen: true,
-                            });
+                            setTask({ isTaskDetailsModalOpen: true });
                           },
                         }
                       );
