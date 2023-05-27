@@ -1,11 +1,11 @@
-import { TopBar, Board, SideBar } from "~/components";
+import { Topbar, Board, Sidebar } from "~/modules/Dashboard";
 
 export default function Main() {
   return (
     <div className="flex h-screen">
-      <SideBar />
+      <Sidebar />
       <div className="flex w-full flex-col lg:w-4/5">
-        <TopBar />
+        <Topbar />
         <Board />
       </div>
     </div>
