@@ -7,7 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { HiXMark } from "react-icons/hi2";
 import { z } from "zod";
 import { api } from "~/utils/api";
-import { Modal, Dropdown, Input } from "./";
+import { Modal, Dropdown, Input } from "../../components";
 
 export const taskAtom = atom<
   | {

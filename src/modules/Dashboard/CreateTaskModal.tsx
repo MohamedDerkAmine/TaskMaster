@@ -7,8 +7,8 @@ import { type FieldValues, useForm, Controller } from "react-hook-form";
 import { HiXMark } from "react-icons/hi2";
 import { z } from "zod";
 import { api } from "~/utils/api";
-import Input from "./Input";
-import Modal from "./Modal";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
 
 const createTaskShema = z.object({
   title: z.string(),

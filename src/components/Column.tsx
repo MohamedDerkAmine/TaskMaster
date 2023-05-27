@@ -4,8 +4,8 @@ import { atom, useAtom } from "jotai";
 import { type FC } from "react";
 import { api } from "~/utils/api";
 import Dropdown from "./Dropdown";
-import { taskAtom } from "./TaskDetailsModal";
-import UpdateColumnModal from "./UpdateColumnModal";
+import { taskAtom } from "../modules/Dashboard/TaskDetailsModal";
+import UpdateColumnModal from "../modules/Dashboard/UpdateColumnModal";
 
 interface ICol {
   column: Column & { tasks: (Task & { subTasks: SubTask[] })[] };

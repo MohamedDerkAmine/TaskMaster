@@ -1,44 +1,45 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { type FC, Fragment } from "react";
 import { type FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "~/utils/api";
-import { columnToUpdateAtom } from "./Column";
-import { Input, Modal } from "./";
+import { isCreateColumnModalOpenAtom } from "./Board";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
+import { boardAtom } from "./Sidebar";
 
-export const isUpdateBaordModalOpenAtom = atom<boolean>(false);
-
-const updateColumnSchema = z.object({
-  title: z.string().optional(),
+const createColumnSchema = z.object({
+  title: z.string().min(1),
 });
 
-const UpdateColumnModal: FC<{ refetchCols: () => void }> = ({
+const CreateColumnModal: FC<{ refetchCols: () => void }> = ({
   refetchCols,
 }) => {
-  const [columnToUpdate, setColumnToUpdate] = useAtom(columnToUpdateAtom);
-  const updateColumnMutation = api.column.update.useMutation();
+  const [board] = useAtom(boardAtom);
+  const [isCreateColumnModalOpen, setIsCreateColumnModalOpen] = useAtom(
+    isCreateColumnModalOpenAtom
+  );
   const {
     control,
     handleSubmit,
     formState: { isValid },
-    reset,
+    setValue,
   } = useForm({
-    resolver: zodResolver(updateColumnSchema),
+    resolver: zodResolver(createColumnSchema),
   });
 
-  const columnUpdate = (data: FieldValues) => {
-    updateColumnMutation.mutate(
-      {
-        columnId: columnToUpdate?.id,
-        title: data.title as string,
-      },
+  const createColumnMutation = api.column.create.useMutation();
+
+  const submitHandler = (data: FieldValues) => {
+    createColumnMutation.mutate(
+      { title: data.title as string, boardId: board?.currentBoard?.id },
       {
         onSuccess() {
-          reset();
+          setIsCreateColumnModalOpen(false);
+          setValue("title", null);
           refetchCols();
-          setColumnToUpdate(null);
         },
       }
     );
@@ -46,10 +47,10 @@ const UpdateColumnModal: FC<{ refetchCols: () => void }> = ({
 
   return (
     <Modal
-      show={columnToUpdate?.id ? true : false}
-      onClose={() => setColumnToUpdate(null)}
+      show={isCreateColumnModalOpen}
+      onClose={() => setIsCreateColumnModalOpen(false)}
       onSubmit={(e) => {
-        void handleSubmit(columnUpdate)(e);
+        void handleSubmit(submitHandler)(e);
       }}
     >
       <Transition.Child
@@ -66,22 +67,23 @@ const UpdateColumnModal: FC<{ refetchCols: () => void }> = ({
             as="h3"
             className="text-lg font-medium leading-6 text-white"
           >
-            Update Column
+            Add New Column
           </Dialog.Title>
           <Input
             name="title"
             type="text"
             control={control}
             label="Title"
-            placeholder="e.g.Launch Tasks"
-            defaultValue={columnToUpdate?.title}
+            placeholder="e.g.TODOS"
           />
           <button
             type="submit"
             disabled={!isValid}
-            className="flex items-center justify-center gap-2 rounded-full bg-secondary py-3 font-medium text-white"
+            className={`flex items-center justify-center gap-2 rounded-full py-3 font-medium text-white ${
+              isValid ? "bg-secondary" : "bg-secondary/50"
+            }`}
           >
-            Update Column
+            Create Column
           </button>
         </Dialog.Panel>
       </Transition.Child>
@@ -89,4 +91,4 @@ const UpdateColumnModal: FC<{ refetchCols: () => void }> = ({
   );
 };
 
-export default UpdateColumnModal;
+export default CreateColumnModal;

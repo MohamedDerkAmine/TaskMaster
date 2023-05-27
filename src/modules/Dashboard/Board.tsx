@@ -4,8 +4,8 @@ import { api } from "~/utils/api";
 import { boardAtom } from "./Sidebar";
 import { TiPlus } from "react-icons/ti";
 import { Menu } from "@headlessui/react";
-import { Dropdown } from ".";
-import { Col } from "./";
+import { Dropdown } from "../../components";
+import { Col } from "../../components";
 import CreateColumnModal from "./CreateColumnModal";
 import TaskDetailsModal from "./TaskDetailsModal";
 

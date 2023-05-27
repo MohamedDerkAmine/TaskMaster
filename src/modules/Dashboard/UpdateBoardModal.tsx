@@ -1,49 +1,52 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAtom } from "jotai";
-import { type FC, Fragment } from "react";
+import { atom, useAtom } from "jotai";
+import { Fragment } from "react";
 import { type FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "~/utils/api";
-import Input from "./Input";
-import Modal from "./Modal";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
 import { boardAtom } from "./Sidebar";
 
-const newBoardSchema = z.object({
-  board_title: z.string().min(1),
-  board_description: z.string().min(1),
+export const isUpdateBaordModalOpenAtom = atom<boolean>(false);
+
+const updateBoardSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
 });
 
-const CreateBoardModal: FC<{ refetchBoards: () => void }> = ({
-  refetchBoards,
-}) => {
+const UpdateBoardModal = () => {
   const [board, setBoard] = useAtom(boardAtom);
-  const createBoardMutation = api.board.create.useMutation();
+  const [isUpdateBaordModalOpen, setIsUpdateBaordModalOpen] = useAtom(
+    isUpdateBaordModalOpenAtom
+  );
+  const updateBoardMutation = api.board.update.useMutation();
   const {
     control,
     handleSubmit,
-    setValue,
     formState: { isValid },
+    reset,
   } = useForm({
-    resolver: zodResolver(newBoardSchema),
+    resolver: zodResolver(updateBoardSchema),
   });
 
-  const createBoardHandler = (data: FieldValues) => {
-    createBoardMutation.mutate(
+  const boardUpdate = (data: FieldValues) => {
+    updateBoardMutation.mutate(
       {
-        title: data.board_title as string,
-        description: data.board_description as string,
+        boardId: board?.currentBoard?.id,
+        title: data.title as string,
+        description: data.description as string,
       },
       {
         onSuccess(data) {
-          refetchBoards();
+          reset();
           setBoard({
             ...board,
-            boards: data,
-            isCreateBoardModalOpen: false,
+            currentBoard: data.board,
+            boards: data.boards,
           });
-          setValue("board_title", null);
-          setValue("board_description", null);
+          setIsUpdateBaordModalOpen(false);
         },
       }
     );
@@ -51,10 +54,10 @@ const CreateBoardModal: FC<{ refetchBoards: () => void }> = ({
 
   return (
     <Modal
-      show={board?.isCreateBoardModalOpen ? true : false}
-      onClose={() => setBoard({ ...board, isCreateBoardModalOpen: false })}
+      show={isUpdateBaordModalOpen}
+      onClose={() => setIsUpdateBaordModalOpen(false)}
       onSubmit={(e) => {
-        void handleSubmit(createBoardHandler)(e);
+        void handleSubmit(boardUpdate)(e);
       }}
     >
       <Transition.Child
@@ -71,30 +74,30 @@ const CreateBoardModal: FC<{ refetchBoards: () => void }> = ({
             as="h3"
             className="text-lg font-medium leading-6 text-white"
           >
-            Add New Board
+            Update Board
           </Dialog.Title>
           <Input
-            name="board_title"
+            name="title"
             type="text"
             control={control}
             label="Title"
             placeholder="e.g.Launch Tasks"
+            defaultValue={board?.currentBoard?.title}
           />
           <Input
-            name="board_description"
+            name="description"
             type="textarea"
             control={control}
             label="Description"
             placeholder="e.g.This Board is for the frontend dev team t handle the frontend"
+            defaultValue={board?.currentBoard?.description}
           />
           <button
             type="submit"
             disabled={!isValid}
-            className={`flex items-center justify-center gap-2 rounded-full py-3 font-medium text-white ${
-              isValid ? "bg-secondary" : "bg-secondary/50"
-            }`}
+            className="flex items-center justify-center gap-2 rounded-full bg-secondary py-3 font-medium text-white"
           >
-            Create Board
+            Update Board
           </button>
         </Dialog.Panel>
       </Transition.Child>
@@ -102,4 +105,4 @@ const CreateBoardModal: FC<{ refetchBoards: () => void }> = ({
   );
 };
 
-export default CreateBoardModal;
+export default UpdateBoardModal;
